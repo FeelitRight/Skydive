@@ -49,7 +49,7 @@ import (
 	"github.com/skydive-project/skydive/config"
 	"github.com/skydive-project/skydive/logging"
 	"github.com/skydive-project/skydive/rbac"
-	"github.com/skydive-project/skydive/statics"
+	_ "github.com/skydive-project/skydive/statics"
 )
 
 type PathPrefix string
@@ -180,7 +180,7 @@ func (s *Server) readStatics(upath string) (content []byte, err error) {
 	if asset, ok := s.extraAssets[upath]; ok {
 		logging.GetLogger().Debugf("Fetch disk asset: %s", upath)
 		content = asset.Content
-	} else if content, err = statics.Asset(upath); err != nil {
+	} else if content, err =  ioutil.ReadFile(os.Getenv("GOPATH") + "/src/github.com/skydive-project/skydive/" + upath); err != nil {
 		logging.GetLogger().Debugf("Fetch embedded asset: %s", upath)
 	}
 	return
@@ -349,7 +349,6 @@ func NewServer(host string, serviceType common.ServiceType, addr string, port in
 	router.PathPrefix("/conversation").HandlerFunc(server.serveIndex)
 	router.PathPrefix("/discovery").HandlerFunc(server.serveIndex)
 	router.PathPrefix("/preference").HandlerFunc(server.serveIndex)
-	router.PathPrefix("/status").HandlerFunc(server.serveIndex)
 	router.HandleFunc("/", server.serveIndex)
 
 	return server
@@ -371,3 +370,4 @@ func NewServerFromConfig(serviceType common.ServiceType) (*Server, error) {
 
 	return NewServer(host, serviceType, sa.Addr, sa.Port, auth, assets), nil
 }
+
